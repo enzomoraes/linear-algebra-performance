@@ -1,7 +1,7 @@
 ````markdown
-## Contiguous Tiled
+## Contiguous Parallel Tiled
 
-Esta estratégia ataca diretamente o problema de performance da versão "naive": o acesso de memória ruim à Matriz B.
+Esta estratégia ataca diretamente o problema de performance da versão "naive": o acesso de memória ruim à Matriz B. Também adiciona o paralelismo
 
 ---
 
@@ -84,7 +84,7 @@ A mágica está no **reuso de dados** dentro do cache.
 | **Naive** | `B[0][j]`, `B[1][j]`, ... `B[1000][j]` | **Desastroso.** O cache não consegue guardar 1000 linhas. |
 | **Tiled** | `B[kk+0][j]`, `B[kk+1][j]`, ... `B[kk+15][j]` | **Excelente.** O cache guarda 16 linhas, que são reutilizadas por todos os `i` do bloco. |
 
-**Resumo:** O Tiling força o processador a trabalhar em sub-problemas pequenos o suficiente para caberem no cache. Ele troca um grande problema (com péssimo acesso à memória) por milhares de pequenos problemas (com ótimo acesso à memória).
+**Resumo:** O Tiling força o processador a trabalhar em sub-problemas pequenos o suficiente para caberem no cache. Ele troca um grande problema (com péssimo acesso à memória) por milhares de pequenos problemas (com ótimo acesso à memória). Neste caso também temos o paralelismo.
 
 ```
 ```
