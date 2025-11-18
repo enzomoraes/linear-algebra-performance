@@ -1,0 +1,3 @@
+[workspace]
+resolver = "2"
+members = ["naive_fragmented", "contiguous_strided", "contiguous_parallel_strided", "contiguous_tiled", "contiguous_parallel_tiled"]
