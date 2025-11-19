@@ -1,9 +1,12 @@
+use std::env;
+
 use contiguous_parallel_strided::Matrix;
 
 fn main() {
-    println!("CONTIGUOUS PARALLEL STRIDED");
+    let size = env::var("SIZE").unwrap_or_else(|_| "1000".to_string());
+    let size = size.parse::<usize>().unwrap();
 
-    let matrix_a = Matrix::random(1000, 1000);
-    let matrix_b = Matrix::random(1000, 1000);
+    let matrix_a = Matrix::random(size, size);
+    let matrix_b = Matrix::random(size, size);
     matrix_a.multiply(&matrix_b);
 }

@@ -1,10 +1,20 @@
 # linear-algebra-performance
 
-to perform the tests, you can run 
+to perform the tests, you can run
 
 ```bash
-perf stat -e task-clock,context-switches,cpu-migrations,page-faults,instructions,cycles,cache-references,cache-misses,branches,branch-misses cargo run --release --bin contiguous_parallel_tiled
+./test.sh
 
 ```
 
-Just switching between the binary you want to perform against
+There'll be an results_raw.txt file as the output
+
+## HARDWARE SPECS
+to perform the tests, you can run
+
+```bash
+./hardware.sh
+
+```
+
+There'll be an results.txt file as the output
