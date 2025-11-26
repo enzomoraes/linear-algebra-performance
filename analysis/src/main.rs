@@ -1,135 +1,177 @@
 use regex::Regex;
-use std::fs;
+use std::fs::File;
+use std::io::{self, Write};
+use std::path::Path;
+use std::fmt;
+use std::env;
 
-#[derive(Debug)]
-struct Metric {
+// Estrutura para armazenar os dados de cada teste
+#[derive(Default, Debug)]
+struct TestMetrics {
     name: String,
-    value: f64,
-    var: f64,    // var% relativo do perf
-    stddev: f64, // desvio padrão calculado
-    share: String,
+    abbreviated_name: String,
+    task_clock: String,
+    cpus_utilized: String,
+    task_clock_cv: String,      // Variância percentual
+    cache_misses: String,
+    cache_misses_cv: String,
+    branch_misses: String,
+    branch_misses_cv: String,
+    instructions: String,
+    instructions_cv: String,
+    time_elapsed: String,
+    time_var_nominal: String,   // +- 0,0219
+    time_var_percent: String,   // +- 1,63%
 }
 
-fn colorize_var(var: f64) -> String {
-    if var < 5.0 {
-        format!("\x1b[32m{:.2}%\x1b[0m", var) // verde
-    } else if var < 15.0 {
-        format!("\x1b[33m{:.2}%\x1b[0m", var) // amarelo
-    } else {
-        format!("\x1b[31m{:.2}%\x1b[0m", var) // vermelho
+impl TestMetrics {
+    fn new() -> Self {
+        Self { ..Default::default() }
     }
 }
 
-fn main() {
-    let content = fs::read_to_string("test_results.txt").expect("Error reading file");
+// Implementação para formatar como linha de CSV
+impl fmt::Display for TestMetrics {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "{};{};{};{};{};{};{};{};{};{};{};{};{};{}",
+            self.name,
+            self.abbreviated_name,
+            self.task_clock,
+            self.cpus_utilized,
+            self.task_clock_cv,
+            self.cache_misses,
+            self.cache_misses_cv,
+            self.branch_misses,
+            self.branch_misses_cv,
+            self.instructions,
+            self.instructions_cv,
+            self.time_elapsed,
+            self.time_var_nominal,
+            self.time_var_percent
+        )
+    }
+}
 
-    let blocks: Vec<&str> = content.split("# TEST_NAME:").skip(1).collect();
+fn main() -> io::Result<()> {
+    // Lê argumentos da linha de comando
+    let args: Vec<String> = env::args().collect();
+    
+    if args.len() != 2 {
+        eprintln!("Uso: {} <caminho_do_arquivo_de_entrada>", args[0]);
+        eprintln!("Exemplo: {} test_results.txt", args[0]);
+        std::process::exit(1);
+    }
+    
+    let input_path = &args[1];
+    
+    // Gera o nome do arquivo de saída baseado no nome do arquivo de entrada
+    let input_stem = Path::new(input_path)
+        .file_stem()
+        .and_then(|s| s.to_str())
+        .unwrap_or("results");
+    let output_path = format!("{}_results.csv", input_stem);
 
-    let re_name = Regex::new(r"(?m)^([^\n]+)").unwrap();
+    // Verifica se o arquivo de entrada existe antes de tentar ler
+    if !Path::new(input_path).exists() {
+        eprintln!("Erro: O arquivo '{}' não foi encontrado.", input_path);
+        std::process::exit(1);
+    }
 
-    let re_metric = Regex::new(
-        r"^\s*(?P<value>[0-9\.,]+|<not counted>)\s+(?P<name>[a-zA-Z0-9_/.\-]+)\/?\s*(?:#.*)?\s*\(\s*\+-\s*(?P<var>[0-9\.,]+)%\s*\)?(?:\s*\(\s*(?P<share>[0-9\.,]+)%\s*\))?"
-    ).unwrap();
+    // Lê o arquivo inteiro para uma String
+    let content = std::fs::read_to_string(input_path)?;
 
-    let re_task_clock =
-        Regex::new(r"(?P<value>[0-9\.,]+)\s+msec task-clock.*\(\s*\+-\s*(?P<var>[0-9\.,]+)%\s*\)")
-            .unwrap();
+    // Compilação das Regex
+    let re_test_name = Regex::new(r"^# TEST_NAME:\s+(.+)$").unwrap();
+    
+    // Regex para task-clock: captura msec, cpus e variância
+    let re_task_clock = Regex::new(r"^\s*([\d\.,]+)\s+msec task-clock\s+#\s+([\d,]+)\s+CPUs utilized\s+\(\s+\+-\s+([\d,]+)%\s+\)").unwrap();
 
-    let re_time_elapsed = Regex::new(
-        r"(?P<value>[0-9\.,]+)\s*\+\-\s*(?P<stderr>[0-9\.,]+)\s*seconds time elapsed(?:\s*\(\s*\+-\s*(?P<var>[0-9\.,]+)%\s*\))?"
-    ).unwrap();
+    // Regex para métricas do core: captura valor, nome da métrica e variância
+    let re_core_metrics = Regex::new(r"^\s*([\d\.]+)\s+cpu_core/(cache-misses|branch-misses|instructions)/\s+\(\s+\+-\s+([\d,]+)%\s+\)").unwrap();
 
-    for block in blocks {
-        let name_caps = re_name.captures(block).unwrap();
-        let test_name = name_caps[1].trim();
+    // Regex para tempo decorrido: captura tempo, var nominal e var percentual
+    let re_elapsed = Regex::new(r"^\s*([\d,]+)\s+\+-\s+([\d,]+)\s+seconds time elapsed\s+\(\s+\+-\s+([\d,]+)%\s+\)").unwrap();
 
-        println!("\n================ {} ================", test_name);
+    let mut metrics = Vec::new();
+    let mut current_metric = TestMetrics::new();
+    let mut collecting = false;
 
-        let mut metrics = Vec::new();
-        let mut time_elapsed: Option<(f64, f64, f64)> = None;
+    // Itera linha a linha do arquivo lido
+    for line in content.lines() {
+        let line = line.trim();
 
-        for line in block.lines() {
-            if let Some(c) = re_metric.captures(line) {
-                let value = if &c["value"] == "<not counted>" {
-                    0.0
-                } else {
-                    c["value"]
-                        .replace(".", "")
-                        .replace(",", ".")
-                        .parse::<f64>()
-                        .unwrap_or(0.0)
-                };
-
-                let var = c["var"].replace(",", ".").parse::<f64>().unwrap_or(0.0);
-
-                // Desvio padrão calculado
-                let stddev = value * (var / 100.0);
-
-                let share = c
-                    .name("share")
-                    .map(|m| m.as_str().replace(",", "."))
-                    .unwrap_or("--".to_string());
-
-                metrics.push(Metric {
-                    name: c["name"].to_string(),
-                    value,
-                    var,
-                    stddev,
-                    share,
-                });
-            } else if let Some(c) = re_task_clock.captures(line) {
-                let value = c["value"]
-                    .replace(".", "")
-                    .replace(",", ".")
-                    .parse::<f64>()
-                    .unwrap();
-
-                let var = c["var"].replace(",", ".").parse::<f64>().unwrap();
-
-                let stddev = value * (var / 100.0);
-
-                metrics.push(Metric {
-                    name: "task-clock (msec)".to_string(),
-                    value,
-                    var,
-                    stddev,
-                    share: "--".to_string(),
-                });
-            } else if let Some(c) = re_time_elapsed.captures(line) {
-                let val = c["value"].replace(",", ".").parse::<f64>().unwrap();
-                let stderr = c["stderr"].replace(",", ".").parse::<f64>().unwrap();
-                let var = c
-                    .name("var")
-                    .map(|m| m.as_str().replace(",", ".").parse::<f64>().unwrap())
-                    .unwrap_or(0.0);
-
-                time_elapsed = Some((val, stderr, var));
+        if let Some(caps) = re_test_name.captures(line) {
+            if collecting {
+                metrics.push(current_metric);
             }
+            current_metric = TestMetrics::new();
+            current_metric.name = caps[1].to_string();
+            current_metric.abbreviated_name = match current_metric.name.as_str() {
+                "naive_fragmented" => "NF".to_string(),
+                "contiguous_strided" => "CS".to_string(),
+                "contiguous_parallel_strided" => "CPS".to_string(),
+                "contiguous_tiled" => "CT".to_string(),
+                "contiguous_parallel_tiled" => "CPT".to_string(),
+                _ => current_metric.name.clone(),
+            };
+            collecting = true;
+            continue;
         }
 
-        // Header novo
-        println!("Métrica                           |     Valor |   Var%  ratio of std-dev/mean |    STD | Share");
-        println!("----------------------------------------------------------------------------");
-
-        for m in metrics {
-            let var_colored = colorize_var(m.var);
-
-            println!(
-                "{:<32} | {:>10.0} | {:>7} | {:>7.0} | {:>6}",
-                m.name, m.value, var_colored, m.stddev, m.share
-            );
+        if !collecting {
+            continue;
         }
 
-        if let Some((val, stderr, var)) = time_elapsed {
-            let var_colored = colorize_var(var);
-            let stddev = val * (var / 100.0);
+        if let Some(caps) = re_task_clock.captures(line) {
+            current_metric.task_clock = caps[1].to_string();
+            current_metric.cpus_utilized = caps[2].to_string();
+            current_metric.task_clock_cv = caps[3].to_string();
+        } else if let Some(caps) = re_core_metrics.captures(line) {
+            let value = caps[1].to_string();
+            let metric_type = &caps[2];
+            let cv = caps[3].to_string();
 
-            println!(
-                "\nTime elapsed: {:.6} s (± {:.6} s, Var% = {}, STD = {:.6} s)",
-                val, stderr, var_colored, stddev
-            );
-        } else {
-            println!("\nTime elapsed: NÃO ENCONTRADO");
+            match metric_type {
+                "cache-misses" => {
+                    current_metric.cache_misses = value;
+                    current_metric.cache_misses_cv = cv;
+                },
+                "branch-misses" => {
+                    current_metric.branch_misses = value;
+                    current_metric.branch_misses_cv = cv;
+                },
+                "instructions" => {
+                    current_metric.instructions = value;
+                    current_metric.instructions_cv = cv;
+                },
+                _ => {}
+            }
+        } else if let Some(caps) = re_elapsed.captures(line) {
+            current_metric.time_elapsed = caps[1].to_string();
+            current_metric.time_var_nominal = caps[2].to_string();
+            current_metric.time_var_percent = caps[3].to_string();
         }
     }
+
+    if collecting {
+        metrics.push(current_metric);
+    }
+
+    // Cria e escreve no arquivo CSV
+    let mut file = File::create(&output_path)?;
+    
+    // Escreve cabeçalho
+    writeln!(file, "Test Name;Abbreviated Name;Task Clock (msec);CPUs Utilized;Task Clock CV(%);Core Cache Misses;Cache Miss CV(%);Core Branch Misses;Branch Miss CV(%);Core Instructions;Instructions CV(%);Time Elapsed (s);Time Var Nominal (+-);Time Var Percent (+-%)")?;
+
+    // Escreve linhas
+    let num_records = metrics.len();
+    for m in metrics {
+        writeln!(file, "{}", m)?;
+    }
+
+    println!("Sucesso! Arquivo '{}' gerado com {} registros.", output_path, num_records);
+
+    Ok(())
 }

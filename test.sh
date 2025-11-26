@@ -2,17 +2,17 @@
 
 # --- Configurações ---
 N_WARMUP=10
-N_REPETITIONS=40
+N_REPETITIONS=50
 SIZE="1000"
 BLOCK_SIZE="264"
-OUTPUT_FILE="test_results.txt"
+OUTPUT_FILE="test_results-$N_REPETITIONS-$SIZE-$BLOCK_SIZE.txt"
 
 > $OUTPUT_FILE
 
 # PERF_EVENTS="task-clock,context-switches,cpu-migrations,page-faults,instructions,cycles,cache-references,cache-misses,branches,branch-misses"
 # PERF_EVENTS="task-clock,context-switches,cpu-migrations,cache-references,cache-misses,branch-misses"
 # PERF_EVENTS="task-clock,cache-misses,branch-misses,cycles,instructions"
-PERF_EVENTS="task-clock,cache-misses,branch-misses"
+PERF_EVENTS="task-clock,cache-misses,branch-misses,instructions"
 
 
 PROGRAMS=(

@@ -2,72 +2,82 @@ P-cores detectados: 3,2,1,0
 E-cores detectados: 9,8,7,6,5,4,12,13,10,11
 usando apenas os P-cores: 3,2,1,0
 # TEST_NAME: naive_fragmented
-# REPEAT: 2
+# REPEAT: 50
 
- Performance counter stats for './target/release/naive_fragmented' (2 runs):
+ Performance counter stats for './target/release/naive_fragmented' (50 runs):
 
-          1.465,73 msec task-clock                       #    0,998 CPUs utilized               ( +-  7,05% )
+          1.332,12 msec task-clock                       #    0,998 CPUs utilized               ( +-  1,17% )
      <not counted>      cpu_atom/cache-misses/                                                  (0,00%)
-         9.171.850      cpu_core/cache-misses/                                                  ( +- 16,02% )
+         7.159.331      cpu_core/cache-misses/                                                  ( +-  2,39% )
      <not counted>      cpu_atom/branch-misses/                                                 (0,00%)
-         1.039.685      cpu_core/branch-misses/                                                 ( +-  0,19% )
+         1.031.531      cpu_core/branch-misses/                                                 ( +-  0,03% )
+     <not counted>      cpu_atom/instructions/                                                  (0,00%)
+    16.187.298.174      cpu_core/instructions/                                                  ( +-  0,00% )
 
-             1,468 +- 0,103 seconds time elapsed  ( +-  7,02% )
+            1,3342 +- 0,0156 seconds time elapsed  ( +-  1,17% )
 
 
 # TEST_NAME: contiguous_strided
-# REPEAT: 2
+# REPEAT: 50
 
- Performance counter stats for './target/release/contiguous_strided' (2 runs):
+ Performance counter stats for './target/release/contiguous_strided' (50 runs):
 
-            986,56 msec task-clock                       #    0,999 CPUs utilized               ( +-  2,87% )
+            834,33 msec task-clock                       #    0,998 CPUs utilized               ( +-  0,50% )
      <not counted>      cpu_atom/cache-misses/                                                  (0,00%)
-        12.672.768      cpu_core/cache-misses/                                                  ( +-  4,97% )
+         6.069.890      cpu_core/cache-misses/                                                  ( +-  2,56% )
      <not counted>      cpu_atom/branch-misses/                                                 (0,00%)
-         1.038.267      cpu_core/branch-misses/                                                 ( +-  0,20% )
+         1.026.672      cpu_core/branch-misses/                                                 ( +-  0,02% )
+     <not counted>      cpu_atom/instructions/                                                  (0,00%)
+    12.179.318.002      cpu_core/instructions/                                                  ( +-  0,00% )
 
-            0,9879 +- 0,0282 seconds time elapsed  ( +-  2,86% )
+           0,83579 +- 0,00414 seconds time elapsed  ( +-  0,50% )
 
 
 # TEST_NAME: contiguous_parallel_strided
-# REPEAT: 2
+# REPEAT: 50
 
- Performance counter stats for './target/release/contiguous_parallel_strided' (2 runs):
+ Performance counter stats for './target/release/contiguous_parallel_strided' (50 runs):
 
-          2.856,70 msec task-clock                       #    3,908 CPUs utilized               ( +-  0,80% )
+          2.877,20 msec task-clock                       #    3,896 CPUs utilized               ( +-  0,31% )
      <not counted>      cpu_atom/cache-misses/                                                  (0,00%)
-         4.173.780      cpu_core/cache-misses/                                                  ( +- 16,12% )
+         2.843.214      cpu_core/cache-misses/                                                  ( +-  2,83% )
      <not counted>      cpu_atom/branch-misses/                                                 (0,00%)
-         1.060.263      cpu_core/branch-misses/                                                 ( +-  0,30% )
+         1.053.007      cpu_core/branch-misses/                                                 ( +-  0,04% )
+     <not counted>      cpu_atom/instructions/                                                  (0,00%)
+    14.202.367.137      cpu_core/instructions/                                                  ( +-  0,00% )
 
-           0,73098 +- 0,00747 seconds time elapsed  ( +-  1,02% )
+           0,73855 +- 0,00213 seconds time elapsed  ( +-  0,29% )
 
 
 # TEST_NAME: contiguous_tiled
-# REPEAT: 2
+# REPEAT: 50
 
- Performance counter stats for './target/release/contiguous_tiled' (2 runs):
+ Performance counter stats for './target/release/contiguous_tiled' (50 runs):
 
-            663,27 msec task-clock                       #    0,997 CPUs utilized               ( +-  2,04% )
+            594,14 msec task-clock                       #    0,997 CPUs utilized               ( +-  0,58% )
      <not counted>      cpu_atom/cache-misses/                                                  (0,00%)
-         1.982.681      cpu_core/cache-misses/                                                  ( +- 15,20% )
+         1.402.913      cpu_core/cache-misses/                                                  ( +-  0,84% )
      <not counted>      cpu_atom/branch-misses/                                                 (0,00%)
-         4.049.819      cpu_core/branch-misses/                                                 ( +-  0,08% )
+         4.042.626      cpu_core/branch-misses/                                                 ( +-  0,01% )
+     <not counted>      cpu_atom/instructions/                                                  (0,00%)
+    11.233.741.240      cpu_core/instructions/                                                  ( +-  0,00% )
 
-            0,6650 +- 0,0133 seconds time elapsed  ( +-  2,00% )
+           0,59571 +- 0,00344 seconds time elapsed  ( +-  0,58% )
 
 
 # TEST_NAME: contiguous_parallel_tiled
-# REPEAT: 2
+# REPEAT: 50
 
- Performance counter stats for './target/release/contiguous_parallel_tiled' (2 runs):
+ Performance counter stats for './target/release/contiguous_parallel_tiled' (50 runs):
 
-          2.342,67 msec task-clock                       #    3,510 CPUs utilized               ( +-  0,46% )
+          2.422,15 msec task-clock                       #    3,590 CPUs utilized               ( +-  0,44% )
      <not counted>      cpu_atom/cache-misses/                                                  (0,00%)
-         3.152.925      cpu_core/cache-misses/                                                  ( +-  1,12% )
+         2.390.171      cpu_core/cache-misses/                                                  ( +-  0,85% )
      <not counted>      cpu_atom/branch-misses/                                                 (0,00%)
-        10.459.354      cpu_core/branch-misses/                                                 ( +-  0,01% )
+        10.818.717      cpu_core/branch-misses/                                                 ( +-  0,39% )
+     <not counted>      cpu_atom/instructions/                                                  (0,00%)
+    12.861.569.492      cpu_core/instructions/                                                  ( +-  0,09% )
 
-           0,66734 +- 0,00426 seconds time elapsed  ( +-  0,64% )
+           0,67475 +- 0,00211 seconds time elapsed  ( +-  0,31% )
 
 

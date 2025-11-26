@@ -7,3 +7,4 @@ edition = "2021"
 
 [dependencies]
 regex = "1.12.2"
+csv = "1.3" # Usaremos para garantir que o CSV seja formatado corretamente
