@@ -1,0 +1,6 @@
+Test Name;Abbreviated Name;Task Clock (msec);CPUs Utilized;Task Clock CV(%);Core Cache Misses;Cache Miss CV(%);Core Branch Misses;Branch Miss CV(%);Core Instructions;Instructions CV(%);Time Elapsed (s);Time Var Nominal (+-);Time Var Percent (+-%)
+naive_fragmented;NF;21.297,61;1,000;0,22;748.824.884;0,12;4.164.084;0,05;128.911.346.569;0,00;21,3057;0,0460;0,22
+contiguous_strided;CS;14.849,98;1,000;0,49;825.448.845;0,04;4.103.856;0,03;96.835.688.755;0,00;14,8544;0,0720;0,49
+contiguous_parallel_strided;CPS;40.993,02;3,972;0,35;300.403.741;3,71;4.245.928;0,05;113.053.321.909;0,00;10,3203;0,0375;0,36
+contiguous_tiled;CT;4.607,01;0,999;0,38;16.765.323;0,16;32.204.029;0,00;89.212.465.682;0,00;4,6094;0,0174;0,38
+contiguous_parallel_tiled;CPT;19.427,01;3,650;0,36;26.249.243;0,77;80.780.311;0,33;101.277.485.939;0,09;5,3218;0,0182;0,34
