@@ -2,7 +2,7 @@
 
 A comprehensive Rust benchmark project that implements matrix multiplication (C = A × B) across 5 different strategies, demonstrating the impact of **cache optimization** and **parallelization** on computational performance.
 
-This project explores how memory layout, access patterns, and multi-threading affect real-world performance—practical insights into why libraries like BLAS, LAPACK, and modern ML frameworks are designed the way they are.
+This project explores how memory layout, access patterns, and multi-threading affect real-world performance
 
 ---
 
@@ -14,7 +14,7 @@ This project explores how memory layout, access patterns, and multi-threading af
 4. **Recognize** when optimization is worth it (and when it's not) based on data size and use case
 5. **Provide** practical insights for choosing the right approach in systems programming and high-performance computing
 
-## Not project goals
+## Not a project goal
 
 1. **Compete with other libraries for linear algebra performance**
     - The goal here is to show how memory layout and access impacts performance. And we use linear algebra to do so.
